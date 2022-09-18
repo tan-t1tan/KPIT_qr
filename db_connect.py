@@ -36,11 +36,14 @@ class Database:
         user_stage = self.users.find_one({'user_id': user_id})['stage']
         if user_stage == values.LAST_STAGE:
             return 2  # Already finished
-        user_flag_hash = hashlib.md5(flag.encode())
+        user_flag_hash = hashlib.md5(flag.encode()).hexdigest()
         real_flag_hash = self.stages.find_one({'num': user_stage + 1})['flag_hash']
 
         if user_flag_hash == real_flag_hash:
-            self.users.update_one({'user_id': user_id}, {'stage': user_stage + 1})
+            self.users.update_one({'user_id': user_id}, {'$set': {'stage': user_stage + 1}})
+            if user_stage + 1 == 4:
+                return 3  # finished
+
             return 1  # Flag is correct
 
         return 0  # Flag is incorrect
@@ -57,12 +60,16 @@ class Database:
 
     def get_stage_hint(self, user_id):
         user_stage = self.users.find_one({'user_id': user_id})['stage']
-        hint = self.stages.find_one({'num': user_stage})['hint']
+        hint = self.stages.find_one({'num': user_stage + 1})['hint']
 
         return hint
 
-    def add_stage(self, hint, flag):
-        flag_hash = hashlib.md5(flag.encode())
-        stage = {'hint': hint,
+    def add_stage(self, num, hint, flag):
+        flag_hash = hashlib.md5(flag.encode()).hexdigest()
+        stage = {'num': num,
+                 'hint': hint,
                  'flag_hash': flag_hash}
         self.stages.insert_one(stage)
+
+    def drop_stages(self):
+        self.stages = self.db['stages']

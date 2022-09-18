@@ -16,6 +16,10 @@ final = "Поздравляю, ты собрал все паскалки и те
         "же. Если ты любишь решать загадки и готов продемонстрировать всем свои навыки, то вступай к нам: " \
         "https://t.me/+Cm5I6cCpVS80M2Iy "
 
+wrong_way = 'wrong_way'
+wrong_flag = 'wrong_flag'
+
+
 ## Values
-LAST_STAGE = 5
+LAST_STAGE = 4
 admins = []
