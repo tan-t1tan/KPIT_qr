@@ -3,18 +3,23 @@ import telebot
 import values
 import db_connect
 from telebot import types
+from datetime import datetime
 
 
 bot = telebot.TeleBot(keys.BOT_TOKEN)
 db = db_connect.Database()
+db.restart()
 
 start_markup = types.ReplyKeyboardMarkup(row_width=1)
 btn1 = types.KeyboardButton('Поехали!')
 start_markup.add(btn1)
 
+
 def to_admins(message):
     for admin in values.admins:
         bot.send_message(admin, message)
+    with open('log.txt', 'a') as f:
+        f.write(f"{datetime.now().strftime('%A, %d. %B %Y %I:%M%p')}    {message}\n")
 
 
 @bot.message_handler(commands=['start'])
@@ -34,7 +39,9 @@ def on_start(message):
 @bot.message_handler(regexp='Поехали!')
 def first_hint(message):
     user_id = message.from_user.id
-    bot.send_message(user_id, db.get_stage_hint(user_id), reply_markup=types.ReplyKeyboardRemove(selective=False))
+    bot.send_message(user_id, values.rules, reply_markup=types.ReplyKeyboardRemove(selective=False))
+    bot.send_message(user_id, values.how_to_play)
+    bot.send_message(user_id, db.get_stage_hint(user_id))
 
 
 @bot.message_handler(commands=['stage'], func=lambda message: message.from_user.username in values.admins)
@@ -48,7 +55,6 @@ def get_stage(message):
         bot.send_message(user_id, f"Пользователь не участвует")
 
 
-
 @bot.message_handler()
 def flag(message):
     user_id = message.from_user.id
@@ -58,12 +64,15 @@ def flag(message):
         flag = message.text
         result = db.next_stage(user_id, flag)
         if result == 0:
+            to_admins(f'Пользователь {db.get_username_by_id(user_id)} ({user_id}) сдал неверный флаг ({flag})')
             bot.send_message(user_id, values.wrong_flag)
         if result == 1:
+            to_admins(f'Пользователь {db.get_username_by_id(user_id)} ({user_id}) сдал верный флаг ({flag}) и переходит на уровень {db.get_stage(user_id)}.')
             bot.send_message(user_id, db.get_stage_hint(user_id))
         if result == 2:
             pass
         if result == 3:
+            to_admins(f'Пользователь {db.get_username_by_id(user_id)} ({user_id}) сдал верный флаг ({flag}) и завершил игру.')
             bot.send_message(user_id, values.final)
 
 

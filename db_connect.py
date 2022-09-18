@@ -75,5 +75,11 @@ class Database:
                  'flag_hash': flag_hash}
         self.stages.insert_one(stage)
 
-    def drop_stages(self):
-        self.stages = self.db['stages']
+    def get_username_by_id(self, user_id):
+        return self.users.find_one({'user_id': user_id})['username']
+
+    def restart(self):
+        self.db.drop_collection('users')
+        self.db.drop_collection('stages')
+        for i in range(values.LAST_STAGE):
+            self.add_stage(i + 1, values.hints[i], values.flags[i])
