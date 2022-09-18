@@ -8,7 +8,7 @@ from datetime import datetime
 
 bot = telebot.TeleBot(keys.BOT_TOKEN)
 db = db_connect.Database()
-db.restart()
+# db.restart()
 
 start_markup = types.ReplyKeyboardMarkup(row_width=1)
 btn1 = types.KeyboardButton('Поехали!')
@@ -17,7 +17,7 @@ start_markup.add(btn1)
 
 def to_admins(message):
     for admin in values.admins:
-        bot.send_message(admin, message)
+        if values.silent_mode == False: bot.send_message(admin, message)
     with open('log.txt', 'a') as f:
         f.write(f"{datetime.now().strftime('%A, %d. %B %Y %I:%M%p')}    {message}\n")
 
@@ -44,15 +44,24 @@ def first_hint(message):
     bot.send_message(user_id, db.get_stage_hint(user_id))
 
 
-@bot.message_handler(commands=['stage'], func=lambda message: message.from_user.username in values.admins)
+@bot.message_handler(commands=['stage'], func=lambda message: message.from_user.id in values.admins)
 def get_stage(message):
     user_id = message.from_user.id
     username = message.text[7:]
     try:
         stage = db.get_stage_by_username(username)
-        bot.send_message(user_id, f"Учатник на {stage} этапе")
+        bot.send_message(user_id, f"Участник на {stage} этапе")
     except TypeError:
         bot.send_message(user_id, f"Пользователь не участвует")
+
+
+@bot.message_handler(commands=['send_all'], func=lambda message: message.from_user.id in values.admins)
+def send_all(message):
+    user_id = message.from_user.id
+    message = message.text[9:]
+    users = db.get_all_users()
+    for user in users:
+        bot.send_message(user, message)
 
 
 @bot.message_handler()

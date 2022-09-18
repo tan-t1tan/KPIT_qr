@@ -83,3 +83,10 @@ class Database:
         self.db.drop_collection('stages')
         for i in range(values.LAST_STAGE):
             self.add_stage(i + 1, values.hints[i], values.flags[i])
+
+    def get_all_users(self):
+        users = self.users.find()
+        users_id = []
+        for user in users:
+            users_id.append(user['user_id'])
+        return users_id
