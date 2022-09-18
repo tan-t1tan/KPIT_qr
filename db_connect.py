@@ -51,9 +51,18 @@ class Database:
         else:
             return True
 
+    def get_stage(self, user_id):
+        user_stage = self.users.find_one({'user_id': user_id})['stage']
+        return user_stage
 
+    def get_stage_hint(self, user_id):
+        user_stage = self.users.find_one({'user_id': user_id})['stage']
+        hint = self.stages.find_one({'num': user_stage})['hint']
 
+        return hint
 
-
-if __name__ == "__main__":
-    ...
+    def add_stage(self, hint, flag):
+        flag_hash = hashlib.md5(flag.encode())
+        stage = {'hint': hint,
+                 'flag_hash': flag_hash}
+        self.stages.insert_one(stage)
