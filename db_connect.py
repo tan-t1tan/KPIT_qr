@@ -58,6 +58,10 @@ class Database:
         user_stage = self.users.find_one({'user_id': user_id})['stage']
         return user_stage
 
+    def get_stage_by_username(self, username):
+        user_stage = self.users.find_one({'username': username})['stage']
+        return user_stage
+
     def get_stage_hint(self, user_id):
         user_stage = self.users.find_one({'user_id': user_id})['stage']
         hint = self.stages.find_one({'num': user_stage + 1})['hint']

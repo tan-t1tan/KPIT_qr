@@ -12,6 +12,10 @@ start_markup = types.ReplyKeyboardMarkup(row_width=1)
 btn1 = types.KeyboardButton('Поехали!')
 start_markup.add(btn1)
 
+def to_admins(message):
+    for admin in values.admins:
+        bot.send_message(admin, message)
+
 
 @bot.message_handler(commands=['start'])
 def on_start(message):
@@ -21,9 +25,10 @@ def on_start(message):
     if db.user_exists(user_id):
         bot.send_message(user_id, db.get_stage_hint(user_id), reply_markup=types.ReplyKeyboardRemove(selective=False))
     else:
+
         bot.send_message(message.from_user.id, values.start_message, reply_markup=start_markup)
         db.add_user(user_id, username)
-
+        to_admins(f'Пользователь {username} ({user_id}) присоединился к игре!')
 
 
 @bot.message_handler(regexp='Поехали!')
@@ -32,8 +37,20 @@ def first_hint(message):
     bot.send_message(user_id, db.get_stage_hint(user_id), reply_markup=types.ReplyKeyboardRemove(selective=False))
 
 
+@bot.message_handler(commands=['stage'], func=lambda message: message.from_user.username in values.admins)
+def get_stage(message):
+    user_id = message.from_user.id
+    username = message.text[7:]
+    try:
+        stage = db.get_stage_by_username(username)
+        bot.send_message(user_id, f"Учатник на {stage} этапе")
+    except TypeError:
+        bot.send_message(user_id, f"Пользователь не участвует")
+
+
+
 @bot.message_handler()
-def first_hint(message):
+def flag(message):
     user_id = message.from_user.id
     if not db.user_exists(user_id):
         bot.send_message(user_id, values.incorrect_start)
