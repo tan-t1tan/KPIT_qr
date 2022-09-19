@@ -18,13 +18,13 @@ us_how_to_play = "Как играть:\nДля прохождения квест
               "ключ отправляйте боту — он подскажет, где искать дальше.\n\n\nЕсли вы считаете, что что-то работает не " \
               "так, как надо — пишите: @wazzzy "
 
-us_already_finished = 'already finished'
+us_already_finished_simple = 'already finished simple'
 
-us_user_not_found = 'UNF'
+us_already_finished_advanced = 'already finished advanced'
 
 us_final_simple = 'us_final_simple'
 
-us_final_advance = 'us_final_advance'
+us_final_advanced = 'us_final_advanced'
 
 
 
