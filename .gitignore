@@ -224,8 +224,7 @@ fabric.properties
 
 res/keys.py
 
-res/values.py
-
 log.txt
 
 users_backup
+

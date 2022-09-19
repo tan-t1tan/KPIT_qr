@@ -37,7 +37,7 @@ class Database:
         if user is None:
             return 0  # User not found
 
-        if self.get_stage(user_id) == 'finished':
+        if self.get_stage(user_id) == 'finished advanced':
             return 1  # Already finished
 
         user_flag_hash = hashlib.md5(flag.encode()).hexdigest()
