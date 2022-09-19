@@ -22,10 +22,6 @@ us_already_finished_simple = 'already finished simple'
 
 us_already_finished_advanced = 'already finished advanced'
 
-us_final_simple = 'us_final_simple'
-
-us_final_advanced = 'us_final_advanced'
-
 us_start_for_old = 'us_start_for_old'
 
 
