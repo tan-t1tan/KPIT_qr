@@ -222,8 +222,10 @@ fabric.properties
 # idea folder, uncomment if you don't need it
 # .idea
 
-keys.py
+res/keys.py
 
-values.py
+res/values.py
 
 log.txt
+
+users_backup
