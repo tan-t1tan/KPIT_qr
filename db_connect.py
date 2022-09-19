@@ -1,4 +1,4 @@
-from res import values, stages
+from res import values, stages, keys
 from datetime import datetime
 import hashlib
 
@@ -13,6 +13,7 @@ class Database:
         self.db = client['KPITctf_test']
         self.users = self.db['users']
         self.stages = self.db['stages']
+        self.old_users = self.db['old_users']
 
         self.users.create_index([('user_id', pymongo.TEXT)], unique=True)
         self.stages.create_index([('num', pymongo.ASCENDING)], unique=True)
@@ -37,8 +38,11 @@ class Database:
         if user is None:
             return 0  # User not found
 
-        if self.get_stage(user_id) == 'finished advanced':
+        if self.get_stage(user_id) == 'finished':
             return 1  # Already finished
+
+        if self.get_stage(user_id) == 'finished advanced':
+            return 6  # Already finished
 
         user_flag_hash = hashlib.md5(flag.encode()).hexdigest()
         real_flag_hash = self.stages.find_one({'num': user['stage'] + 1})['flag_hash']
@@ -132,8 +136,8 @@ class Database:
             users.append(user)
         return users
 
-    # def is_winner(self, user_id):
-    #     if self.winners.find_one({user_id}) is not None:
-    #         return True
-    #     else:
-    #         return False
+    def is_old_winner(self, user_id):
+        if self.old_users.find_one({'user_id': user_id}):
+            if self.old_users.find_one({'user_id': user_id})['stage'] == 4:
+                return True
+        return False
