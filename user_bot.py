@@ -7,7 +7,7 @@ from res import messages
 
 bot = telebot.TeleBot(keys.USER_BOT_TOKEN)
 db = db_connect.Database(keys.MONGO_AUTH)
-# db.restart()  # ЗАКОМЕННТИРОВАТЬ ПЕРЕД ДЕПЛОЕМ!!!
+db.restart()  # ЗАКОМЕННТИРОВАТЬ ПЕРЕД ДЕПЛОЕМ!!!
 
 start_markup = types.ReplyKeyboardMarkup(row_width=1)
 btn1 = types.KeyboardButton(values.start_button_text)
@@ -29,13 +29,17 @@ def on_start(message):
     username = message.from_user.username
     if username is None: username = 'None'
     if db.user_exists(user_id):
-        hint = db.get_stage_hint(user_id)
+        hint, img = db.get_stage_hint(user_id)
         if hint == 0:
             bot.send_message(user_id, messages.us_finished_simple, reply_markup=advanced_markup)
         elif hint == 1:
             pass
         else:
-            bot.send_message(user_id, hint, reply_markup=types.ReplyKeyboardRemove(selective=False))
+            if img != '0':
+                bot.send_photo(user_id, photo=img, caption=hint,
+                               reply_markup=types.ReplyKeyboardRemove(selective=False))
+            else:
+                bot.send_message(user_id, hint, reply_markup=types.ReplyKeyboardRemove(selective=False))
     else:
 
         bot.send_message(message.from_user.id, messages.us_start_message, reply_markup=start_markup)
@@ -48,7 +52,11 @@ def first_hint(message):
     user_id = message.from_user.id
     bot.send_message(user_id, messages.us_rules, reply_markup=types.ReplyKeyboardRemove(selective=False))
     bot.send_message(user_id, messages.us_how_to_play)
-    bot.send_message(user_id, db.get_stage_hint(user_id))
+    hint, img = db.get_stage_hint(user_id)
+    if img != '0':
+        bot.send_photo(user_id, photo=img, caption=hint)
+    else:
+        bot.send_message(user_id, hint)
     if db.is_old_winner(user_id): bot.send_message(user_id, messages.us_start_for_old)
 
 
@@ -60,7 +68,13 @@ def advanced_handler(message):
     if result == 1:
         admin_bot.to_admins(messages.ad_set_advanced.format(username=db.get_username_by_id(user_id),
                                                             user_id=user_id))
-    bot.send_message(user_id, db.get_stage_hint(user_id), reply_markup=types.ReplyKeyboardRemove(selective=False))
+
+        hint, img = db.get_stage_hint(user_id)
+        if img != '0':
+            bot.send_photo(user_id, photo=img, caption=hint, reply_markup=types.ReplyKeyboardRemove(selective=False))
+        else:
+            bot.send_message(user_id, hint, reply_markup=types.ReplyKeyboardRemove(selective=False))
+
 
 
 @bot.message_handler(commands=['rules'])
@@ -106,7 +120,12 @@ def flag_handler(message):
         admin_bot.to_admins(messages.ad_flag_correct.format(username=db.get_username_by_id(user_id),
                                                             user_id=user_id, msg=message.text,
                                                             stage=db.get_stage(user_id)))
-        bot.send_message(user_id, db.get_stage_hint(user_id))
+
+        hint, img = db.get_stage_hint(user_id)
+        if img != '0':
+            bot.send_photo(user_id, photo=img, caption=hint)
+        else:
+            bot.send_message(user_id, hint)
 
     elif result == 6:
         admin_bot.to_admins(messages.ad_already_finished_advanced.format(username=db.get_username_by_id(user_id),

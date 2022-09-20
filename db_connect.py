@@ -53,7 +53,6 @@ class Database:
             return 2  # Flag is incorrect
 
         # Check - is finished
-        print(f"us = {user['stage']}, LS = {values.LAST_STAGE}")
         if self.get_stage(user_id) == values.LAST_STAGE and user['advanced'] == 'False':
             self.users.update_one({'user_id': user_id}, {'$set': {'stage': 'finished'}})
             return 3  # Finished simple
@@ -66,11 +65,12 @@ class Database:
         if self.get_stage(user_id) not in ['finished', 'finished advanced']:
             user_stage = self.users.find_one({'user_id': user_id})['stage']
             hint = self.stages.find_one({'num': user_stage + 1})['hint']
-            return hint
+            img = self.stages.find_one({'num': user_stage + 1})['img']
+            return hint, img
         elif self.get_stage(user_id) == 'finished':
-            return 0
+            return 0, 0
         elif self.get_stage(user_id) == 'finished advanced':
-            return 1
+            return 1, 0
 
     def set_advanced(self, user_id):
         user = self.users.find_one({'user_id': user_id})
@@ -99,11 +99,12 @@ class Database:
         user_stage = self.users.find_one({'username': username})['stage']
         return user_stage
 
-    def add_stage(self, num, hint, flag):
+    def add_stage(self, num, hint, flag, img='Null'):
         flag_hash = hashlib.md5(flag.encode()).hexdigest()
         stage = {'num': num,
                  'hint': hint,
-                 'flag_hash': flag_hash}
+                 'flag_hash': flag_hash,
+                 'img': img}
         self.stages.insert_one(stage)
 
     def get_username_by_id(self, user_id):
@@ -120,7 +121,7 @@ class Database:
         self.db.drop_collection('users')
         self.db.drop_collection('stages')
         for i in range(values.LAST_STAGE_ADVANCED):
-            self.add_stage(i + 1, stages.hints[i], stages.flags[i])
+            self.add_stage(i + 1, stages.hints[i], stages.flags[i], stages.img[i])
 
     def get_all_users_id(self):
         users = self.users.find()
